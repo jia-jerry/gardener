@@ -18,7 +18,9 @@
 - --cloud-provider={{ .Values.cloudProvider }}
 {{- else }}
 - --cloud-provider=external
+{{- if contains .Values.cloudProvider "aws_azure_gcp_local_openstack" }}
 - --external-cloud-volume-plugin={{ .Values.cloudProvider }}
+{{- end }}
 {{- end }}
 {{- end }}
 {{- end -}}
