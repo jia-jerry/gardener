@@ -43,7 +43,7 @@ type cloudConfig struct {
 func (b *AlicloudBotanist) GenerateCloudProviderConfig() (string, error) {
 	var (
 		vpcID     = "vpc_id"
-		vswitchID = fmt.Sprintf("vswitch_id_z%v", 0)
+		vswitchID = fmt.Sprintf("vswitch_id_z%d", 0)
 	)
 	tf, err := terraformer.NewFromOperation(b.Operation, common.TerraformerPurposeInfra)
 	if err != nil {
@@ -105,12 +105,12 @@ func (b *AlicloudBotanist) GenerateCloudControllerManagerConfig() (map[string]in
 		"defaultCCM":      false,
 		"configureRoutes": false,
 	}
-	_, err := b.InjectImages(conf, "", map[string]string{"alicloud-ccm": "alicloud-ccm"})
+	newConf, err := b.InjectImages(conf, "", "alicloud-ccm", "alicloud-ccm")
 	if err != nil {
 		return conf, err
 	}
 
-	return conf, nil
+	return newConf, nil
 }
 
 // GenerateKubeControllerManagerConfig generates the cloud provider specific values which are required to
@@ -130,6 +130,13 @@ func (b *AlicloudBotanist) GenerateEtcdBackupConfig() (map[string][]byte, map[st
 	return map[string][]byte{}, map[string]interface{}{}, nil
 }
 
+// DeployCloudSpecificControlPlane does currently nothing for Azure.
 func (b *AlicloudBotanist) DeployCloudSpecificControlPlane() error {
 	return nil
+}
+
+// GenerateKubeAPIServerServiceConfig generates the cloud provider specific values which are required to render the
+// Service manifest of the kube-apiserver-service properly.
+func (b *AlicloudBotanist) GenerateKubeAPIServerServiceConfig() (map[string]interface{}, error) {
+	return map[string]interface{}{}, nil
 }

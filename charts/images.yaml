@@ -46,7 +46,10 @@ images:
   sourceRepository: github.com/gardener/aws-lb-readvertiser
   repository: eu.gcr.io/gardener-project/gardener/aws-lb-readvertiser
   tag: "0.4.0"
-
+- name: alicloud-ccm
+  sourceRepository: github.com/AliyunContainerService/alicloud-controller-manager
+  repository: r1.gardenerregistry.org/acs/cloud-controller-manager-amd64
+  tag: v1.9.7
 # Monitoring
 - name: alertmanager
   sourceRepository: github.com/prometheus/alertmanager
