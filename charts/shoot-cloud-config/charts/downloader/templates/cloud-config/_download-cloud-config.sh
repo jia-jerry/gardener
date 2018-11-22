@@ -20,7 +20,7 @@ function kubectl() {
     -v "$DIR_CLOUDCONFIG"/:"$DIR_CLOUDCONFIG" \
     -v "$DIR_CLOUDCONFIG_DOWNLOADER"/:"$DIR_CLOUDCONFIG_DOWNLOADER" \
     -e "KUBECONFIG=$PATH_KUBECONFIG" \
-    k8s.gcr.io/hyperkube:v1.9.3 \
+    {{ index .Values.images "hyperkube" }} \
     kubectl "$@"
 }
 
@@ -36,7 +36,7 @@ fi
 IMAGES="$(kubectl --namespace=kube-system get secret "$SECRET_NAME" -o jsonpath='{.data.images}')";
 if [[ "$IMAGES" != "" ]]; then
   echo "Preloading docker images"
-  echo "$IMAGES" | base64 -d | docker run -i {{ index .Values.images "ruby" }} ruby -e 'require "json"; puts JSON::load(STDIN.read).values.compact' | xargs docker pull
+  echo "$IMAGES" | base64 -d | docker run --rm -i {{ index .Values.images "ruby" }} ruby -e 'require "json"; puts JSON::load(STDIN.read).values.compact' |  awk '{system("docker pull "$1)}'
 fi
 
 base64 -d <<< $CLOUD_CONFIG > "$PATH_CLOUDCONFIG"
@@ -91,7 +91,7 @@ if ! diff "$PATH_CLOUDCONFIG" "$PATH_CLOUDCONFIG_OLD" >/dev/null; then
     echo "Successfully applied new cloud config version"
     if [ "$(stat -c%s "$PATH_CLOUDCONFIG_OLD")" -ne "0" ]; then
       systemctl daemon-reload
-      cat "$PATH_CLOUDCONFIG" | docker run -i {{ index .Values.images "ruby" }} ruby -e "require 'yaml'; puts YAML::load(STDIN.read)['coreos']['units'].map{|v| v['name'] if v['name'] != 'docker.service'}.compact" | xargs systemctl restart
+      cat "$PATH_CLOUDCONFIG" | docker run --rm -i {{ index .Values.images "ruby" }} ruby -e "require 'yaml'; puts YAML::load(STDIN.read)['coreos']['units'].map{|v| v['name'] if v['name'] != 'docker.service'}.compact" | xargs systemctl restart
       echo "Successfully restarted all units referenced in the cloud config."
     fi
     cp "$PATH_CLOUDCONFIG" "$PATH_CLOUDCONFIG_OLD"

@@ -2,3 +2,5 @@ kubeconfig: kubeconfig for cloud-config-downloader
 secretName: cpu-worker-0
 images:
   ruby: image-repository:image-tag
+  hyperkube: k8s.gcr.io/hyperkube:1.9.3
+cloudProvider: aws

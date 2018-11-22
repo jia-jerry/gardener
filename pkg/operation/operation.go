@@ -248,11 +248,12 @@ func (o *Operation) InjectImages(values map[string]interface{}, k8sVersionRuntim
 // the rendered chart.
 func (o *Operation) ComputeDownloaderCloudConfig(workerName string) (*chartrenderer.RenderedChart, error) {
 	config := map[string]interface{}{
-		"kubeconfig": string(o.Secrets["cloud-config-downloader"].Data["kubeconfig"]),
-		"secretName": o.Shoot.ComputeCloudConfigSecretName(workerName),
+		"kubeconfig":    string(o.Secrets["cloud-config-downloader"].Data["kubeconfig"]),
+		"secretName":    o.Shoot.ComputeCloudConfigSecretName(workerName),
+		"cloudProvider": o.Shoot.CloudProvider,
 	}
 
-	values, err := o.InjectImages(config, o.ShootVersion(), o.ShootVersion(), common.RubyImageName)
+	values, err := o.InjectImages(config, o.ShootVersion(), o.ShootVersion(), common.RubyImageName, common.HyperkubeImageName)
 	if err != nil {
 		return nil, err
 	}

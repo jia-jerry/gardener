@@ -48,8 +48,8 @@ images:
   tag: "0.4.0"
 - name: alicloud-ccm
   sourceRepository: github.com/AliyunContainerService/alicloud-controller-manager
-  repository: r1.gardenerregistry.org/acs/cloud-controller-manager-amd64
-  tag: v1.9.7
+  repository: r1.gardenerregistry.org/gardener/alicloud-controller-manager
+  tag: "1.9.8"
 # Monitoring
 - name: alertmanager
   sourceRepository: github.com/prometheus/alertmanager
