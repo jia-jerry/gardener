@@ -349,6 +349,20 @@ func (b *HybridBotanist) DeployKubeAPIServer() error {
 	}
 	defaultValues["admissionPlugins"] = admissionPlugins
 
+	if b.ShootCloudBotanist.GenerateCloudConfigUserDataConfig().EnableCSI {
+		var featureGates map[string]interface{}
+		if defaultValues["featureGates"] != nil {
+			featureGates = defaultValues["featureGates"].(map[string]interface{})
+		}
+		newFeatures, err := common.InjectKubeletCSIFeatureGates(b.ShootVersion(), featureGates)
+		if err != nil {
+			return err
+		}
+		if newFeatures != nil {
+			defaultValues["featureGates"] = newFeatures
+		}
+	}
+
 	values, err := b.Botanist.InjectImages(defaultValues, b.SeedVersion(), b.ShootVersion(),
 		common.HyperkubeImageName,
 		common.VPNSeedImageName,

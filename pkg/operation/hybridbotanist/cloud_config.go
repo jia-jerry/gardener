@@ -158,7 +158,19 @@ func (b *HybridBotanist) generateOriginalConfig() (map[string]interface{}, error
 	if kubeletConfig != nil {
 		originalConfig["kubernetes"].(map[string]interface{})["kubelet"].(map[string]interface{})["featureGates"] = kubeletConfig.FeatureGates
 	}
-
+	if userDataConfig.EnableCSI {
+		var featureGates map[string]interface{}
+		if originalConfig["kubernetes"].(map[string]interface{})["kubelet"].(map[string]interface{})["featureGates"] != nil {
+			featureGates = originalConfig["kubernetes"].(map[string]interface{})["kubelet"].(map[string]interface{})["featureGates"].(map[string]interface{})
+		}
+		newFeatures, err := common.InjectKubeAPIServerCSIFeatureGates(b.ShootVersion(), featureGates)
+		if err != nil {
+			return nil, err
+		}
+		if newFeatures != nil {
+			originalConfig["kubernetes"].(map[string]interface{})["kubelet"].(map[string]interface{})["featureGates"] = newFeatures
+		}
+	}
 	if caBundle := b.Shoot.CloudProfile.Spec.CABundle; caBundle != nil {
 		originalConfig["caBundle"] = *caBundle
 	}
@@ -180,7 +192,7 @@ func (b *HybridBotanist) computeOperatingSystemConfigsForWorker(machineTypes []g
 		"secretName":           secretName,
 	}
 	originalConfig["worker"] = map[string]interface{}{
-		"name":                        worker.Name,
+		"name": worker.Name,
 		"evictionHardMemoryAvailable": evictionHardMemoryAvailable,
 		"evictionSoftMemoryAvailable": evictionSoftMemoryAvailable,
 	}

@@ -444,6 +444,64 @@ func ShouldObjectBeRemoved(obj metav1.Object, gracePeriod time.Duration) bool {
 	return deletionTimestamp.Time.Before(time.Now().Add(-gracePeriod))
 }
 
+// InjectKubeAPIServerCSIFeatureGates adds required feature gates for csi when bootstraping KubeAPIServer based on kubernetes version
+func InjectKubeAPIServerCSIFeatureGates(kubeVersion string, featureGates map[string]interface{}) (map[string]interface{}, error) {
+	lessV1_13, err := utils.CompareVersions(kubeVersion, "<", "v1.13.0")
+	if err != nil {
+		return featureGates, err
+	}
+	if lessV1_13 {
+		return featureGates, nil
+	}
+
+	//https://kubernetes-csi.github.io/docs/Setup.html
+	csiFG := map[string]interface{}{
+		"VolumeSnapshotDataSource": true,
+		"KubeletPluginsWatcher":    true,
+		"CSINodeInfo":              true,
+		"CSIDriverRegistry":        true,
+	}
+
+	if featureGates == nil {
+		return csiFG, nil
+	}
+
+	for k, v := range csiFG {
+		featureGates[k] = v
+	}
+
+	return featureGates, nil
+}
+
+// InjectKubeletCSIFeatureGates adds required feature gates for csi when bootstraping Kubelet based on kubernetes version
+func InjectKubeletCSIFeatureGates(kubeVersion string, featureGates map[string]interface{}) (map[string]interface{}, error) {
+	lessV1_13, err := utils.CompareVersions(kubeVersion, "<", "v1.13.0")
+	if err != nil {
+		return featureGates, err
+	}
+	if lessV1_13 {
+		return featureGates, nil
+	}
+
+	//https://kubernetes-csi.github.io/docs/Setup.html
+	csiFG := map[string]interface{}{
+		"VolumeSnapshotDataSource": true,
+		"KubeletPluginsWatcher":    true,
+		"CSINodeInfo":              true,
+		"CSIDriverRegistry":        true,
+	}
+
+	if featureGates == nil {
+		return csiFG, nil
+	}
+
+	for k, v := range csiFG {
+		featureGates[k] = v
+	}
+
+	return featureGates, nil
+}
+
 // DeleteLoggingStack deletes all resource of the EFK logging stack in the given namespace.
 func DeleteLoggingStack(k8sClient kubernetes.Interface, namespace string) error {
 	if k8sClient == nil {
